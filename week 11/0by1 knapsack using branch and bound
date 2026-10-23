@@ -1,0 +1,87 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Item
+{
+    int weight, profit;
+    double ratio;
+};
+
+bool cmp(Item a, Item b)
+{
+    return a.ratio > b.ratio;
+}
+
+int W, n, maxProfit = 0;
+vector<Item> items;
+
+double bound(int level, int profit, int weight)
+{
+    if (weight >= W)
+        return 0;
+
+    double result = profit;
+    int totalWeight = weight;
+    int i = level + 1;
+
+    while (i < n && totalWeight + items[i].weight <= W)
+    {
+        totalWeight += items[i].weight;
+        result += items[i].profit;
+        i++;
+    }
+
+    if (i < n)
+        result += (W - totalWeight) * items[i].ratio;
+
+    return result;
+}
+
+void knapsack(int level, int profit, int weight)
+{
+    if (weight <= W)
+        maxProfit = max(maxProfit, profit);
+
+    if (level == n - 1)
+        return;
+
+    if (bound(level, profit, weight) <= maxProfit)
+        return;
+
+    // Include next item
+    if (weight + items[level + 1].weight <= W)
+        knapsack(level + 1,
+                 profit + items[level + 1].profit,
+                 weight + items[level + 1].weight);
+
+    // Exclude next item
+    knapsack(level + 1, profit, weight);
+}
+
+int main()
+{
+    cout << "Enter number of items: ";
+    cin >> n;
+
+    cout << "Enter capacity: ";
+    cin >> W;
+
+    items.resize(n);
+
+    cout << "Enter weight and profit of each item:\n";
+
+    for (int i = 0; i < n; i++)
+    {
+        cin >> items[i].weight >> items[i].profit;
+        items[i].ratio =
+            (double)items[i].profit / items[i].weight;
+    }
+
+    sort(items.begin(), items.end(), cmp);
+
+    knapsack(-1, 0, 0);
+
+    cout << "Maximum profit = " << maxProfit << endl;
+
+    return 0;
+}
